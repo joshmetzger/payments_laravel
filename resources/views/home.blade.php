@@ -22,7 +22,7 @@
 
                         <div class="col-auto">
                             <label for="">Currency</label><br>
-                            <select id="" class="custom-select" name="currency" required>
+                            <select class="form-select" name="currency" required>
                                 @foreach($currencies as $currency)
                                     <option value="{{ $currency->iso }}">
                                         {{ strtoupper($currency->iso) }}
@@ -36,15 +36,20 @@
                     <div class="row mt-3">
                         <div class="col">
                             <label for="">Select the desired payment platform</label>
-                            <div class="form-group">
-                                <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                            <div class="form-group" id="toggler">
+                                <div class="btn-group btn-group-toggle" data-bs-toggle="buttons">
                                     @foreach($paymentPlatforms as $paymentPlatform)
-                                        <label for="" class="btn btn-outline-secondary rounded m-2 p-1">
+                                        <label class="btn btn-outline-secondary rounded m-2 p-1" data-bs-target="#{{ $paymentPlatform->name }}Collapse" data-bs-toggle="collapse">
                                             <input type="radio" name="payment_platform" value="{{ $paymentPlatform->id }}" required>
-                                            <img class="img-thumbnail" src="{{ asset($paymentPlatform->image) }}" alt="">
+                                            <img class="img-thumbnail" src="{{ asset($paymentPlatform->image) }}">
                                         </label>
                                     @endforeach
                                 </div>
+                                @foreach($paymentPlatforms as $paymentPlatform)
+                                   <div id="{{ $paymentPlatform->name }}Collapse" class="collapse" data-bs-parent="#toggler">
+                                    @includeIf ('components.' . strtolower($paymentPlatform->name) . '-collapse')
+                                   </div>
+                                @endforeach
                             </div>
                         </div>
                     </div>
