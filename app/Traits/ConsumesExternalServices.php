@@ -2,7 +2,7 @@
 
 namespace App\Traits;
 
-use GuzzleGttp\Client;
+use GuzzleHttp\Client;
 
 trait ConsumesExternalServices
 {
