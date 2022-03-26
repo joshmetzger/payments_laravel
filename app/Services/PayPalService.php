@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Traits\ConsumesExternalServices;
+use Illuminate\Http\Request;
 
 class PayPalService
 {
@@ -36,6 +37,40 @@ class PayPalService
         $credentials = base64_encode("{$this->clientId}:{$this->clientSecret}");
 
         return "Basic {$credentials}";
+    }
+
+    public function handlePayment(Request $request)
+    {
+        $order = $this->createOrder($request->value, $request->currency);
+
+        $orderLinks = collect($order->links);
+
+        $approve = $orderLinks->where('rel', 'approve')->first();
+
+        session()->put('approvalId', $order->id);
+
+        return redirect($approve->href);
+    }
+
+    public function handleApproval()
+    {
+        if(session()->has('approvalId')) {
+            $approvalId = session()->get('approvalId');
+
+            $payment = $this->capturePayment($approvalId);
+
+            $name = $payment->payer->name->given_name;
+            $payment = $payment->purchase_units[0]->payments->captures[0]->amount;
+
+            $amount = $payment->value;
+            $currency = $payment->currency_code;
+
+            return redirect()->route('home')->withSuccess([
+                'payment' => "Thanks, {$name}. We received your payment of {$amount}{$currency}"
+            ]);
+        }
+
+        return redirect()->route('home')->withErrors('Error in processing paymemt. Please try again');
     }
 
     public function createOrder($value, $currency)
