@@ -37,7 +37,7 @@ class PaymentController extends Controller
 
     public function approval()
     {
-
+        return redirect()->route('home');
     }
 
     public function cancelled()
