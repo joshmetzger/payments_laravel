@@ -35,7 +35,7 @@ class PaymentController extends Controller
             'payment_platform' => ['required', 'exists:payment_platforms,id'],
         ];
 
-        dd($request->all());
+        // dd($request->all());
 
         $request->validate($rules);
 
@@ -58,7 +58,7 @@ class PaymentController extends Controller
         }
 
         return redirect()->route('home')
-            ->withErrors('This payment platform cannot be resolved. Please try again');        
+            ->withErrors('This payment cannot be resolved. Please try again');        
     }
 
     public function cancelled()
