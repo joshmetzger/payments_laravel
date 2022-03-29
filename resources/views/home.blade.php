@@ -53,6 +53,19 @@
                             </div>
                         </div>
                     </div>
+                    <div class="row">
+                        <div class="col-auto">
+                            <p class="border-bottom border-primary rounded">
+                                @if(! optional(auth()->user())->hasActiveSubscription())
+                                    Would you like adiscount evey time?
+                                    <a href="{{ route('subscribe.show') }}">Subscribe</a>
+                                @else
+                                    You get <span class="font-weight-bold"> 10% off</span> as part of your subscription. 
+                                    (This will be applied in checkout)
+                                @endif
+                            </p>
+                        </div>
+                    </div>
                     <div class="text-center mt-3">
                         <button type="submit" id="payButton" class="btn btn-primary btn-lg">Pay</button>
                     </div>
