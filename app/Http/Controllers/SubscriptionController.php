@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Resolvers\PaymentPlatformResolver;
 
 use Illuminate\Http\Request;
 use App\Models\Plan;
+use App\Resolvers\PaymentPlatformResolver;
+use App\Models\Subscription;
 use App\Models\PaymentPlatform;
 
 class SubscriptionController extends Controller
@@ -32,6 +33,21 @@ class SubscriptionController extends Controller
 
     public function store(Request $request)
     {
+        $rules = [
+            'plan' => ['required', 'exists:plans,slug'],
+            'payment_platform' => ['required', 'exists:payment_platforms,id'],
+        ];
+
+        $request->validate($rules);
+
+        $paymentPlatform = $this->paymentPlatformResolver
+            ->resolveService($request->payment_platform);
+
+        session()->put('subscriptionPlatformId', $request->payment_platform);
+
+        return $paymentPlatform->handleSubscription($request);
+
+
         $rules = [
             'plan' => ['required', 'exists:plans,slug'],
             'payment_platform' => ['required', 'exists:payment_platforms,id'],
