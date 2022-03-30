@@ -15,7 +15,7 @@ class SubscriptionController extends Controller
 
     public function __construct(PaymentPlatformResolver $paymentPlatformResolver)
     {
-        $this->middleware('auth');
+        $this->middleware(['auth', 'unsubscribed']);
 
         $this->paymentPlatformResolver = $paymentPlatformResolver;
     }
@@ -23,7 +23,6 @@ class SubscriptionController extends Controller
     public function show()
     {
         $paymentPlatforms = PaymentPlatform::where('subscriptions_enabled', true)->get();
-        // $paymentPlatforms = PaymentPlatform::get();
 
         return view('subscribe')->with([
             'plans'=> Plan::all(),
@@ -46,30 +45,44 @@ class SubscriptionController extends Controller
         session()->put('subscriptionPlatformId', $request->payment_platform);
 
         return $paymentPlatform->handleSubscription($request);
+    }
 
-
+    public function approval(Request $request)
+    {
         $rules = [
             'plan' => ['required', 'exists:plans,slug'],
-            'payment_platform' => ['required', 'exists:payment_platforms,id'],
         ];
 
         $request->validate($rules);
 
-        $paymentPlatform = $this->paymentPlatformResolver
-            ->resolveService($request->payment_platform);
+        if(session()->has('subscriptionPlatformId')) {
+            $paymentPlatform = $this->paymentPlatformResolver
+                ->resolveService(session()->get('subscriptionPlatformId'));
 
-        session()->put('subscriptionPlatformId', $request->payment_platform);
+                if ($paymentPlatform->validateSubscription($request)) {
 
-        return $paymentPlatform->handleSubscription($request);
-    }
+                    $plan = Plan::where('slug', $request->plan)->firstOrFail();
+                    $user = $request->user();
 
-    public function approval()
-    {
-        
+                    $subscription = Subscription::create([
+                        'active_until' => now()->addDays($plan->duration_in_days),
+                        'user_id' => $user->id,
+                        'plan_id' => $plan->id,
+                    ]);
+
+                    return redirect()->route('home')
+                        ->withSuccess(['payment' => "Thanks, {$user->name}. You now have 
+                        a {$plan->slug} subscription."]);
+                }
+        }
+        return redirect()->route('subscribe.show')
+            ->withErrors('We cannot check your subscription. Try again please.');
+
     }
 
     public function cancelled()
     {
-        
+        return redirect()->route('subscribe.show')
+            ->withErrors('You cancelled the subscription process. Come back whenver you\'re ready');
     }
 }

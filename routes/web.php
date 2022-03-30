@@ -24,8 +24,8 @@ Route::get('/payments/cancelled', [App\Http\Controllers\PaymentController::class
 Route::prefix('subscribe')->group(function () {
     Route::get('/', [App\Http\Controllers\SubscriptionController::class, 'show'])->name('subscribe.show');
     Route::post('/', [App\Http\Controllers\SubscriptionController::class, 'store'])->name('subscribe.store');
-    Route::get('/approvel', [App\Http\Controllers\SubscriptionController::class, 'store'])->name('subscribe.approval');
-    Route::get('/cancelled', [App\Http\Controllers\SubscriptionController::class, 'store'])->name('subscribe.cancelled');
+    Route::get('/approvel', [App\Http\Controllers\SubscriptionController::class, 'approval'])->name('subscribe.approval');
+    Route::get('/cancelled', [App\Http\Controllers\SubscriptionController::class, 'cancelled'])->name('subscribe.cancelled');
 });
 
 Auth::routes();

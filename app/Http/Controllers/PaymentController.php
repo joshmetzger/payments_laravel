@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Services\PayPalService;
 use App\Resolvers\PaymentPlatformResolver;
+use App\Models\User;
 
 
 class PaymentController extends Controller
@@ -35,14 +36,16 @@ class PaymentController extends Controller
             'payment_platform' => ['required', 'exists:payment_platforms,id'],
         ];
 
-        // dd($request->all());
-
         $request->validate($rules);
 
         $paymentPlatform = $this->paymentPlatformResolver
             ->resolveService($request->payment_platform);
 
         session()->put('paymentPlatformId', $request->payment_platform);
+
+        if ($request->user()->hasActiveSubscription()) {
+            $request->value = round($request->value * 0.9, 2);
+        }
 
         return $paymentPlatform->handlePayment($request);
 
